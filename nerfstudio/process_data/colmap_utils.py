@@ -43,25 +43,25 @@ from nerfstudio.utils.rich_utils import CONSOLE, status
 from nerfstudio.utils.scripts import run_command
 
 
-def get_colmap_version(colmap_cmd: str, default_version: str = "3.8") -> Version:
+def get_colmap_version(default_version=3.8) -> float:
     """Returns the version of COLMAP.
     This code assumes that colmap returns a version string of the form
-    "COLMAP 3.8 ..." which may not be true for all versions of COLMAP.
+    "COLMAP 3.9.1 ..." which may not be true for all versions of COLMAP.
 
     Args:
         default_version: Default version to return if COLMAP version can't be determined.
     Returns:
-        The version of COLMAP.
+        The version of COLMAP as a float, only considering the major and minor version numbers.
     """
-    output = run_command(f"{colmap_cmd} -h", verbose=False)
+    output = run_command("colmap", verbose=False)
     assert output is not None
     for line in output.split("\n"):
         if line.startswith("COLMAP"):
-            version = line.split(" ")[1]
-            version = Version(version)
-            return version
-    CONSOLE.print(f"[bold red]Could not find COLMAP version. Using default {default_version}")
-    return Version(default_version)
+            version_parts = line.split(" ")[1].split(".")
+            major_minor_version = ".".join(version_parts[:2])  # Take only the first two components
+            return float(major_minor_version)
+    print(f"Could not find COLMAP version. Using default {default_version}")
+    return default_version
 
 
 def get_vocab_tree() -> Path:
